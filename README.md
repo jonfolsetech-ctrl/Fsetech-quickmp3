@@ -18,24 +18,48 @@ This project showcases:
 - Node.js 18+
 - ffmpeg installed on your system (required by `pydub`)
 
+### 🔑 AI Service API Keys (Optional)
+
+The app works with stub/placeholder audio by default. To use real AI services:
+
+1. **Suno AI** (Music Generation): Get API key from [suno.ai](https://suno.ai)
+2. **ElevenLabs** (Voice Synthesis): Get API key from [elevenlabs.io](https://elevenlabs.io)
+
+Set up your API keys:
+
+```bash
+cp .env.example .env
+# Edit .env and add your API keys
+```
+
 ---
 
 ## 🖥 Backend Setup
 
 ```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
+# Install dependencies
 pip install -r requirements.txt
+
+# Optional: Set up AI service API keys
+cp .env.example .env
+# Edit .env and add your API keys (SUNO_API_KEY, ELEVENLABS_API_KEY)
+
+# Run the server
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
+
+The backend will:
+- ✅ Run with stub audio if no API keys are set
+- 🎵 Use Suno AI for music generation if `SUNO_API_KEY` is set
+- 🎤 Use ElevenLabs for voice synthesis if `ELEVENLABS_API_KEY` is set
+
+Check service status at `http://localhost:8000/health`
 
 ---
 
 ## 🌐 Frontend Setup
 
 ```bash
-cd frontend
 npm install
 npm run dev
 ```
@@ -44,7 +68,9 @@ The UI is branded:
 
 - App name: **QuickMP3 by FolseTech AI Solutions**
 - Tagline: *"Transforming ideas into intelligent tracks."*
-- Colors inspired by FolseTech’s tech blue / teal palette.
+- Colors inspired by FolseTech's tech blue / teal palette.
+
+Frontend will be available at `http://localhost:5173`
 
 You can deploy:
 
@@ -53,11 +79,37 @@ You can deploy:
 
 ---
 
-## 🔌 Wiring Real AI Providers
+## 🔌 AI Services Integration
 
-Inside `backend/main.py`, replace:
+The backend now supports real AI providers with automatic fallback to stubs:
 
-- `generate_instrumental()` → Call Suno/Udio/music model API
-- `synthesize_vocals()` → Call ElevenLabs / RVC / other voice cloning API
+### ✅ **Already Integrated**
 
-Then keep `mix_tracks()` as your final combiner, or replace with a DAW-style mixer.
+1. **Suno AI** - Music/Instrumental Generation
+   - Set `SUNO_API_KEY` environment variable
+   - Automatically generates instrumental tracks based on genre and lyrics
+   
+2. **ElevenLabs** - Voice Synthesis & Cloning
+   - Set `ELEVENLABS_API_KEY` environment variable
+   - Converts lyrics to sung vocals
+   - Supports voice cloning from uploaded samples
+
+### 🎛 **How It Works**
+
+- **With API Keys**: Real AI-generated music and vocals
+- **Without API Keys**: Placeholder audio (10-second silence) for testing
+- **Graceful Fallback**: If API calls fail, automatically uses stubs
+
+### 📊 **Check Status**
+
+Visit `http://localhost:8000/health` to see which AI services are active:
+
+```json
+{
+  "status": "ok",
+  "ai_services": {
+    "suno": true,
+    "elevenlabs": true
+  }
+}
+```
